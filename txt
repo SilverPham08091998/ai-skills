@@ -1,0 +1,92 @@
+.claude/
+└── guidelines/
+    └── mobile-engineer/
+        ├── README.md
+        │
+        ├── foundation/
+        │   ├── role.md
+        │   ├── coding-principles.md
+        │   ├── clean-code.md
+        │   └── naming-convention.md
+        │
+        ├── architecture/
+        │   ├── mobile-architecture.md
+        │   ├── feature-module.md
+        │   ├── layer-rule.md
+        │   ├── dependency-rule.md
+        │   └── navigation-rule.md
+        │
+        ├── react-native/
+        │   ├── project-structure.md
+        │   ├── component-rule.md
+        │   ├── screen-rule.md
+        │   ├── hook-rule.md
+        │   ├── native-module-rule.md
+        │   └── bridge-rule.md
+        │
+        ├── state-management/
+        │   ├── redux-toolkit.md
+        │   ├── redux-observable.md
+        │   ├── async-flow.md
+        │   ├── token-management.md
+        │   └── offline-state.md
+        │
+        ├── api-integration/
+        │   ├── api-client.md
+        │   ├── request-response.md
+        │   ├── error-handling.md
+        │   ├── retry-timeout.md
+        │   └── upload-download.md
+        │
+        ├── security/
+        │   ├── mobile-security.md
+        │   ├── ssl-pinning.md
+        │   ├── secure-storage.md
+        │   ├── biometric.md
+        │   ├── jailbreak-root-detection.md
+        │   └── sensitive-data-rule.md
+        │
+        ├── performance/
+        │   ├── rendering-performance.md
+        │   ├── flatlist-performance.md
+        │   ├── memory-leak.md
+        │   ├── image-optimization.md
+        │   └── startup-performance.md
+        │
+        ├── fintech-banking/
+        │   ├── payment-flow.md
+        │   ├── otp-soft-otp.md
+        │   ├── ekyc.md
+        │   ├── transaction-screen.md
+        │   ├── qr-nfc-payment.md
+        │   └── audit-logging.md
+        │
+        ├── testing/
+        │   ├── unit-testing.md
+        │   ├── component-testing.md
+        │   ├── integration-testing.md
+        │   ├── e2e-testing.md
+        │   └── release-testing.md
+        │
+        ├── debugging/
+        │   ├── react-native-debugging.md
+        │   ├── android-debugging.md
+        │   ├── ios-debugging.md
+        │   ├── flipper.md
+        │   └── production-issue.md
+        │
+        ├── release/
+        │   ├── build-android.md
+        │   ├── build-ios.md
+        │   ├── fastlane.md
+        │   ├── appcenter.md
+        │   ├── codepush.md
+        │   └── store-release.md
+        │
+        └── generators/
+            ├── create-screen.md
+            ├── create-feature.md
+            ├── create-api-flow.md
+            ├── create-redux-flow.md
+            ├── create-native-module.md
+            └── refactor-mobile-module.md
