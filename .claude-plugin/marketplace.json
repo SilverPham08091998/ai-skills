@@ -1,0 +1,25 @@
+{
+  "name": "ai-skills",
+  "owner": {
+    "name": "tinhpn2",
+    "email": "tinhphamnhat08091998@gmail.com"
+  },
+  "metadata": {
+    "description": "Backend (Java/Spring Boot/Clean Architecture) and Mobile (React Native) engineering guidelines for fintech-grade production code",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "ai-skills",
+      "source": "./plugins/ai-skills",
+      "description": "Backend and Mobile engineering guidelines — Java, Spring Boot, Clean Architecture, Code Review, Testing, Microservice Patterns, React Native, Mobile Architecture, and State Management for fintech apps",
+      "version": "1.0.0",
+      "author": {
+        "name": "tinhpn2",
+        "email": "tinhphamnhat08091998@gmail.com"
+      },
+      "license": "MIT",
+      "category": "engineering"
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "name": "ai-skills",
+  "version": "1.0.0",
+  "description": "Backend (Java/Spring Boot/Clean Architecture) and Mobile (React Native) engineering guidelines for fintech-grade production code",
+  "author": {
+    "name": "tinhpn2",
+    "email": "tinhphamnhat08091998@gmail.com"
+  },
+  "license": "MIT"
+}
