@@ -6,6 +6,5 @@
     "name": "tinhpn2",
     "email": "tinhphamnhat08091998@gmail.com"
   },
-  "license": "MIT",
-  "hooks": "./hooks/hooks.json"
+  "license": "MIT"
 }
