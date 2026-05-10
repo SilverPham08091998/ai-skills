@@ -1,30 +1,25 @@
-# Global Rules
+# AI Skills — Global Workflow Rules
 
-## Planning Before Implementation
+## 1. Planning Gate (Bắt buộc trước khi implement)
 
-**CRITICAL: Before writing, editing, or creating ANY code/file, you MUST:**
+Trước khi viết bất kỳ code nào, PHẢI:
+1. Present **TODO list** với đầy đủ các bước
+2. **Chờ user confirm** (ok / confirm / làm đi / yes / proceed)
+3. Sau đó mới bắt đầu implement theo thứ tự workflow
 
-1. Present a clear TODO list in this format:
-   ```
-   ## TODO
-   - [ ] Step 1 — mô tả ngắn
-   - [ ] Step 2 — mô tả ngắn
-   - [ ] Step 3 — mô tả ngắn
-   ```
+## 2. Feature Implementation Workflow
 
-2. **STOP and wait** for explicit user approval before proceeding.
+Khi implement một chức năng, thực hiện tuần tự các bước sau:
 
-3. Only start implementing after user confirms (e.g., "ok", "làm đi", "proceed", "go ahead", "done", "confirm", "yes").
+@workflow/01-architecture.md
+@workflow/02-structure-check.md
+@workflow/03-coding.md
+@workflow/04-unit-tests.md
+@workflow/05-coverage.md
+@workflow/06-version-guide.md
 
-4. If the user asks a question or exploration (không yêu cầu code), respond normally without a TODO.
+## 3. Ghi chú chung
 
-**This rule applies to:**
-- Writing new files
-- Editing existing files
-- Running scripts that modify files
-- Any implementation task
-
-**This rule does NOT apply to:**
-- Read-only operations (reading files, searching, explaining code)
-- Simple one-liner fixes explicitly approved inline
-- Tasks where user already said "just do it" or similar upfront
+- Mỗi bước phải hoàn thành trước khi qua bước tiếp theo
+- Nếu bước nào fail (test, build, coverage) → dừng, báo lỗi, fix trước khi tiếp tục
+- Version guide (bước 6) là bắt buộc, không được bỏ qua
