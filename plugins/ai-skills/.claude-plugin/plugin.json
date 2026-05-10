@@ -1,7 +1,7 @@
 {
   "name": "ai-skills",
-  "version": "1.0.0",
-  "description": "Backend (Java/Spring Boot/Clean Architecture) and Mobile (React Native) engineering guidelines for fintech-grade production code",
+  "version": "2.0.0",
+  "description": "Centralized engineering skills covering Backend (Java/Spring Boot/Clean Architecture), Mobile (React Native), Cloud Infrastructure, Security, DevOps, Observability, UI Design, and more — 173 skills for production-grade development",
   "author": {
     "name": "tinhpn2",
     "email": "tinhphamnhat08091998@gmail.com"
