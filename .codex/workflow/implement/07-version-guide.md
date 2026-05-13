@@ -1,4 +1,4 @@
-# Step 06 — Version Guide (Markdown Documentation)
+# Step 07 — Version Guide (Markdown Documentation)
 
 ## Mục đích
 Ghi lại toàn bộ những gì đã làm trong lần implement này — để team có thể review, onboard, hoặc rollback khi cần.
@@ -13,8 +13,8 @@ Nếu không có thư mục `docs/`, tạo ở root project.
 ```markdown
 # [Feature Name] — Version Guide
 **Date:** YYYY-MM-DD
-**Author:** Claude + <user>
-**Version:** vX.Y.Z hoặc commit hash
+**Author:** Codex + <user>
+**Version:** vX.Y.Z / branch name / pending commit
 
 ---
 
@@ -75,7 +75,7 @@ flyway migrate
 
 ## 7. Rollback plan
 > Hướng dẫn rollback nếu có vấn đề.
-- Revert commit: `git revert <commit-hash>`
+- Revert changed files or revert the future commit/PR that contains this change
 - Rollback DB migration (nếu có): `flyway undo`
 
 ## 8. Checklist deploy
@@ -93,4 +93,3 @@ flyway migrate
 - [ ] Danh sách file changed đầy đủ và chính xác
 - [ ] Coverage report đã được ghi vào
 - [ ] Rollback plan đã được mô tả
-- [ ] File đã được commit cùng với code

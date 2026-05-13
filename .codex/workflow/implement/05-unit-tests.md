@@ -1,4 +1,4 @@
-# Step 04 — Unit Tests
+# Step 05 — Unit Tests
 
 ## Nguyên tắc
 
@@ -63,7 +63,7 @@ Ví dụ:
 | Go | testing + testify | gomock | testify/assert |
 | Rust | built-in `#[test]` | mockall | assert! |
 
-## Checklist trước khi qua Step 05
+## Checklist trước khi qua Step 06
 - [ ] Tất cả public method của class mới đều có test
 - [ ] Happy path đã được cover
 - [ ] Error cases đã được cover

@@ -13,7 +13,7 @@ When generating or reviewing code in any folder, use these files from the ai-ski
 1. `CODEX.md` for global engineering and production-safety rules.
 2. `SKILL.md` to understand available Codex skill groups and routing.
 3. `COMMANDS.md` to select the Codex execution entrypoint.
-4. `workflow/*.md` for implementation, refactor, code review follow-up, or file-editing work.
+4. `workflow/router.md` to classify the request intent, then the matching workflow file(s).
 5. `skills/<skill-name>/SKILL.md` for the specific backend, mobile, review, testing, Java, Spring Boot, Clean Architecture, React Native, or state-management skill that matches the task.
 6. `generator-pipeline.md` for end-to-end service/module/API/Kafka generation.
 7. `templates/*.md` for concrete generation tasks.
@@ -41,7 +41,9 @@ Claude plugin can enforce workflow through hooks. Codex does not use Claude plug
 Codex enforcement is instruction-driven:
 
 - Before edits, Codex must explicitly read the matching command in `COMMANDS.md`.
-- For implementation work, Codex must read all six files in `.codex/workflow/` before the first file edit.
+- Codex must read `.codex/workflow/router.md` before selecting an intent-specific workflow.
+- For ask/explanation work, Codex must read `.codex/workflow/ask.md` and research local context before falling back to outside knowledge.
+- For implementation work, Codex must read `.codex/workflow/implement/00-context-alignment.md` through `.codex/workflow/implement/08-pre-commit.md` before the first file edit.
 - Codex must present the TODO/file-scope gate from `CODEX.md` and wait for approval unless the user already approved that exact scope.
 - Codex must run validation commands directly with available tools and report commands that could not run.
 - When the target project is not ai-skills, Codex must still read commands/workflows/skills from the ai-skills rule root before editing the target project.
@@ -61,7 +63,8 @@ Codex enforcement is instruction-driven:
 - Before implementation, present a TODO/file-scope plan and wait for explicit user confirmation.
 - Files already listed in the approved TODO/file scope may proceed without asking again.
 - If a needed edit falls outside the approved file scope, stop and ask before touching that file.
-- Follow `.codex/workflow/01-architecture.md` through `.codex/workflow/06-version-guide.md` for feature implementation.
+- For Ask requests, research target-project or rule context first, answer with local examples as the primary source, and do not edit files.
+- Follow `.codex/workflow/implement/00-context-alignment.md` through `.codex/workflow/implement/08-pre-commit.md` for feature implementation.
 - Follow Clean Architecture: Controller -> Application -> Domain -> Infrastructure.
 - Keep domain code framework-free.
 - Use MapStruct for mapping boundaries.

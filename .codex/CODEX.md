@@ -54,18 +54,24 @@ Before implementing any code, refactor, generated artifact, or repository rule u
 3. Wait for explicit user confirmation such as `ok`, `confirm`, `làm đi`, `yes`, or `proceed`.
 4. Implement only after approval and follow the workflow order.
 
-Files already listed in an approved scope may be edited without asking again.
+Files already listed in an approved TODO/file scope may be edited without asking again. After approval, Codex must continue task-by-task without repeated yes/no confirmations unless there is a real blocker, validation failure, or required out-of-scope file change.
+
+Ask/explanation workflows do not use the Planning Gate because they must not edit files. If an Ask response leads to a requested change, switch to the matching edit workflow and apply the Planning Gate before editing.
 
 ## 0.3 Out-of-Scope File Changes
 
 If a required edit is outside the approved TODO/file list, Codex MUST stop and ask first:
 
 ```text
-Cần sửa thêm file ngoài scope đã liệt kê:
+Cần sửa thêm file ngoài scope đã approve:
 - File: `path/to/file.ts`
-- Làm gì: mô tả thay đổi cụ thể
-- Tại sao: lý do kỹ thuật bắt buộc phải sửa file này
-Bạn có đồng ý không?
+- Việc cần làm: mô tả thay đổi cụ thể
+- Vì sao cần sửa: lý do kỹ thuật bắt buộc phải sửa file này
+- Nếu thêm thay đổi này thì làm được gì: capability/behavior unblock được
+- Hướng giải quyết: cách sửa dự kiến
+- Rủi ro nếu không sửa: hậu quả hoặc giới hạn nếu giữ nguyên scope
+
+Bạn có đồng ý thêm file này vào scope không?
 ```
 
 Only proceed after clear user approval.
@@ -74,14 +80,33 @@ Only proceed after clear user approval.
 
 For feature implementation, code generation, or meaningful refactor work, execute these steps in order:
 
-1. `<ai-skills-rule-root>/.codex/workflow/01-architecture.md`
-2. `<ai-skills-rule-root>/.codex/workflow/02-structure-check.md`
-3. `<ai-skills-rule-root>/.codex/workflow/03-coding.md`
-4. `<ai-skills-rule-root>/.codex/workflow/04-unit-tests.md`
-5. `<ai-skills-rule-root>/.codex/workflow/05-coverage.md`
-6. `<ai-skills-rule-root>/.codex/workflow/06-version-guide.md`
+1. `<ai-skills-rule-root>/.codex/workflow/implement/00-context-alignment.md`
+2. `<ai-skills-rule-root>/.codex/workflow/implement/01-architecture.md`
+3. `<ai-skills-rule-root>/.codex/workflow/implement/02-structure-check.md`
+4. `<ai-skills-rule-root>/.codex/workflow/implement/03-task-breakdown.md`
+5. `<ai-skills-rule-root>/.codex/workflow/implement/04-coding.md`
+6. `<ai-skills-rule-root>/.codex/workflow/implement/05-unit-tests.md`
+7. `<ai-skills-rule-root>/.codex/workflow/implement/06-coverage.md`
+8. `<ai-skills-rule-root>/.codex/workflow/implement/07-version-guide.md`
+9. `<ai-skills-rule-root>/.codex/workflow/implement/08-pre-commit.md`
 
-Each step must be completed before moving to the next. If tests, build, or coverage fail, stop, report the failure, and fix before continuing. Step 06 version guide is mandatory.
+Each step must be completed before moving to the next. If tests, build, or coverage fail, stop, report the failure, and fix before continuing. Step 07 version guide is mandatory. Step 08 is mandatory before any user-requested commit.
+
+## 0.5 Mandatory Ask Workflow
+
+For questions, explanations, skill/rule reading, repository orientation, or pre-implementation discovery, use:
+
+1. `<ai-skills-rule-root>/.codex/workflow/ask.md`
+
+Ask must research local target-project or ai-skills context first when it may answer the question. Outside knowledge is secondary and should be used only as support or fallback. Ask must not edit files, run implementation validation, or create version guides.
+
+## 0.6 Intent Routing
+
+Before choosing an ask, implementation, review, refactor, bug-fix, skill-update, or sync workflow, use:
+
+1. `<ai-skills-rule-root>/.codex/workflow/router.md`
+
+If the user's intent is clear, route directly. If the intent is ambiguous, ask the user to choose the workflow before proceeding.
 
 ---
 

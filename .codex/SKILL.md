@@ -97,16 +97,21 @@ Use when:
 
 # 1.5 Workflow Files
 
-Use `.codex/workflow/*.md` for implementation, refactor, and generated code changes:
+Use `.codex/workflow/*.md` by command intent. Do not read every workflow file for every request.
 
 | File | Purpose |
 |------|---------|
-| `workflow/01-architecture.md` | Decide when architecture diagrams/contracts are required |
-| `workflow/02-structure-check.md` | Scan current structure and list file scope before coding |
-| `workflow/03-coding.md` | Implement inside-out with clean code and security rules |
-| `workflow/04-unit-tests.md` | Add behavior-focused tests |
-| `workflow/05-coverage.md` | Run tests/build and verify >= 90% coverage for changed code where tooling supports it |
-| `workflow/06-version-guide.md` | Write implementation documentation, rollback notes, and deploy checklist |
+| `workflow/router.md` | Classify user intent and route to ask, implement, fix-bug, review, refactor, update-skill, or sync-rules |
+| `workflow/ask.md` | Answer questions by researching local context first, then using outside knowledge only as support or fallback |
+| `workflow/implement/00-context-alignment.md` | Research project context, restate understanding, identify prompt gaps, and align solution direction before architecture |
+| `workflow/implement/01-architecture.md` | Decide when architecture diagrams/contracts are required |
+| `workflow/implement/02-structure-check.md` | Scan current structure and list file scope before coding |
+| `workflow/implement/03-task-breakdown.md` | Break approved file scope into detailed dependency-ordered tasks before coding |
+| `workflow/implement/04-coding.md` | Implement inside-out with clean code and security rules |
+| `workflow/implement/05-unit-tests.md` | Add behavior-focused tests |
+| `workflow/implement/06-coverage.md` | Run tests/build and verify >= 90% coverage for changed code where tooling supports it |
+| `workflow/implement/07-version-guide.md` | Write implementation documentation, rollback notes, and deploy checklist |
+| `workflow/implement/08-pre-commit.md` | Re-run tests, protect environment branches, verify final file changes report, and prepare commit message/body |
 
 ---
 
