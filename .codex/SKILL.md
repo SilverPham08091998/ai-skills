@@ -4,6 +4,7 @@
 ## Purpose
 
 This document is the **central registry (map)** of all engineering skill files under `.codex/`.
+It can be loaded from the ai-skills rule root while Codex works in any target project folder.
 
 It defines:
 
@@ -20,7 +21,7 @@ It defines:
 Codex-ready skills live in:
 
 ```text
-.codex/skills/<skill-name>/SKILL.md
+<ai-skills-rule-root>/.codex/skills/<skill-name>/SKILL.md
 ```
 
 Use these first when the task clearly matches a specific backend, mobile, Java, Spring Boot, Clean Architecture, testing, code-review, React Native, or state-management skill.
@@ -33,19 +34,29 @@ plugins/ai-skills/skills/<skill-name>/SKILL.md
 
 Do not modify or rely on the Claude plugin copy when updating Codex behavior. Keep Codex skill changes under `.codex/skills`.
 
-Current Codex skill groups:
+Codex workflow rules live in:
 
-* `clean-architecture-*`
-* `code-review-*`
-* `engineering-*`
-* `infrastructure-datasource`
-* `java-*`
-* `microservice-*`
-* `springboot-*`
-* `testing-*`
-* `mobile-*`
-* `react-native-*`
-* `state-*`
+```text
+<ai-skills-rule-root>/.codex/workflow/*.md
+```
+
+These mirror the intent of Claude plugin workflow rules under `plugins/ai-skills/workflow/*.md`
+without depending on the Claude plugin copy.
+
+Current Codex catalog mirrors the Claude plugin skill catalog: **173 skills** under `.codex/skills`.
+
+Primary Codex skill groups include:
+
+* Backend: `clean-architecture-*`, `code-review-*`, `engineering-*`, `infrastructure-datasource`, `java-*`, `microservice-*`, `springboot-*`, `testing-*`
+* Mobile: `mobile-*`, `react-native-*`, `state-*`
+* API/backend platforms: `api-design-principles`, `fastapi-templates`, `nodejs-backend-patterns`, `openapi-spec-generation`, `postgresql`
+* Cloud/infra/devops: `cloudflare*`, `github-actions-templates`, `gitlab-ci-patterns`, `gitops-workflow`, `helm-chart-scaffolding`, `k8s-*`, `terraform-module-library`, `wrangler`
+* Security/reliability/observability: `anti-reversing-techniques`, `attack-tree-construction`, `distributed-tracing`, `grafana-dashboards`, `incident-runbook-templates`, `pci-compliance`, `sast-configuration`, `secrets-management`, `slo-implementation`, `sonar-*`, `stride-analysis-patterns`, `threat-mitigation-mapping`
+* Frontend/design: `angular-migration`, `design-system-patterns`, `figma-*`, `frontend-design`, `interaction-design`, `nextjs-app-router-patterns`, `react-*`, `responsive-design`, `tailwind-design-system`, `typescript-advanced-types`, `visual-design-foundations`, `web-*`
+* Workflow/productivity: `architecture-*`, `capture-tasks-from-meeting-notes`, `changelog-automation`, `context-driven-development`, `generate-*`, `spec-to-backlog`, `track-management`, `triage-issue`, `workflow-*`
+* Payments/domain integrations: `billing-automation`, `paypal-integration`, `stripe-integration`
+
+Use `find .codex/skills -mindepth 2 -maxdepth 2 -name SKILL.md | sort` when an exact skill inventory is required.
 
 ---
 
@@ -63,6 +74,17 @@ Global engineering rules + AI behavior contract.
 
 ---
 
+## COMMANDS.md
+
+* Codex execution entrypoints for implementation, review, rule sync, and skill updates
+
+Use when:
+
+* selecting what Codex must read and execute before touching files
+* translating Claude plugin workflow into Codex tool-driven behavior
+
+---
+
 ## generator-pipeline.md
 
 * Code generation pipeline orchestration
@@ -70,6 +92,21 @@ Global engineering rules + AI behavior contract.
 Use when:
 
 * running end-to-end code generation flow
+
+---
+
+# 1.5 Workflow Files
+
+Use `.codex/workflow/*.md` for implementation, refactor, and generated code changes:
+
+| File | Purpose |
+|------|---------|
+| `workflow/01-architecture.md` | Decide when architecture diagrams/contracts are required |
+| `workflow/02-structure-check.md` | Scan current structure and list file scope before coding |
+| `workflow/03-coding.md` | Implement inside-out with clean code and security rules |
+| `workflow/04-unit-tests.md` | Add behavior-focused tests |
+| `workflow/05-coverage.md` | Run tests/build and verify >= 90% coverage for changed code where tooling supports it |
+| `workflow/06-version-guide.md` | Write implementation documentation, rollback notes, and deploy checklist |
 
 ---
 

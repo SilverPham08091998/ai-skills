@@ -1,8 +1,13 @@
-# AI Skills — Claude Code Plugin
+# AI Skills
 
-Repository này là một **Claude Code Plugin** chứa engineering guidelines cho backend (Java/Spring Boot/Clean Architecture) và mobile (React Native) dành cho fintech/banking apps.
+Repository này centralize **AI engineering skills, rules, workflow** cho nhiều assistant.
 
-Plugin tự động inject đúng guidelines vào context khi Claude Code làm việc, giúp AI generate code nhất quán và production-ready.
+- Claude Code plugin nằm trong `plugins/ai-skills/`.
+- Codex rules và skills nằm trong `.codex/`.
+- Hai bên tách file để không conflict, nhưng phải giữ cùng intent về workflow và production safety.
+- Claude plugin và Codex hiện cùng có **173 skills**.
+
+Trọng tâm repo: fintech/banking backend, Java/Spring Boot, Clean Architecture, React Native mobile, testing, review, observability, security, idempotency, và sensitive-data masking.
 
 ---
 
@@ -97,189 +102,45 @@ Nếu muốn dùng bản local thay vì GitHub:
 
 ---
 
-## Danh Sách Skills (57 skills)
+## Assistant Layout
 
-### Backend — Clean Architecture (7)
-
-| Skill | Mô tả |
-|-------|-------|
-| `clean-architecture-layers` | Layer overview, dependency rules, ports & adapters |
-| `clean-architecture-common` | Shared rules across all layers |
-| `clean-architecture-controller` | Controller layer rules — thin, validation only |
-| `clean-architecture-application` | Application/UseCase layer rules |
-| `clean-architecture-domain` | Domain layer rules — rich model, invariants |
-| `clean-architecture-infrastructure` | Infrastructure layer — adapters, clients |
-| `clean-architecture-mapper` | Mapping rules between layers (MapStruct) |
-
-### Backend — Code Review (4)
-
-| Skill | Mô tả |
-|-------|-------|
-| `code-review-backend` | Backend PR review checklist |
-| `code-review-performance` | Performance review guidelines |
-| `code-review-pr-checklist` | PR merge checklist |
-| `code-review-production-readiness` | Production readiness checklist |
-
-### Backend — Engineering (4)
-
-| Skill | Mô tả |
-|-------|-------|
-| `engineering-clean-code` | Clean code principles |
-| `engineering-coding-principles` | Core coding philosophy (SOLID, SRP, etc.) |
-| `engineering-design-patterns` | Standard design patterns usage |
-| `engineering-naming-convention` | Naming rules for classes, methods, variables |
-
-### Backend — Infrastructure (1)
-
-| Skill | Mô tả |
-|-------|-------|
-| `infrastructure-datasource` | HikariCP datasource configuration rules |
-
-### Backend — Java (5)
-
-| Skill | Mô tả |
-|-------|-------|
-| `java-core` | Java core best practices (types, null, exceptions, streams) |
-| `java-collections` | Collection usage rules |
-| `java-concurrency` | Thread safety, executor usage |
-| `java-performance` | JVM optimization, GC awareness |
-| `java-lombok-mapstruct` | Lombok annotations + MapStruct mapping rules |
-
-### Backend — Microservice Patterns (2)
-
-| Skill | Mô tả |
-|-------|-------|
-| `microservice-outbox` | Transactional Outbox pattern |
-| `microservice-master-slave` | Master-Slave / Leader-Follower pattern |
-
-### Backend — Spring Boot (8)
-
-| Skill | Mô tả |
-|-------|-------|
-| `springboot-project-structure` | Domain-first package structure |
-| `springboot-rest-api` | REST API design standards |
-| `springboot-validation` | Bean Validation, input validation rules |
-| `springboot-exception-handler` | Global exception handling |
-| `springboot-security` | Authentication, authorization, JWT |
-| `springboot-testing` | Spring Boot testing strategy |
-| `springboot-logging` | Structured logging with SLF4J/Logback/MDC |
-| `springboot-tracing` | Distributed tracing (OpenTelemetry / Micrometer) |
-
-### Backend — Testing (4)
-
-| Skill | Mô tả |
-|-------|-------|
-| `testing-unit` | Unit testing rules (JUnit 5, Mockito, AssertJ) |
-| `testing-api` | API/Controller testing (MockMvc, @WebMvcTest) |
-| `testing-e2e` | End-to-end testing strategy |
-| `testing-performance` | Performance testing (k6, Gatling) |
-
-### Mobile — Architecture (5)
-
-| Skill | Mô tả |
-|-------|-------|
-| `mobile-architecture` | Global layer architecture (application/domain/infra/component/presentation) |
-| `mobile-feature-module` | Feature module structure rules |
-| `mobile-layer-rule` | Layer responsibility rules |
-| `mobile-dependency-rule` | Dependency direction rules |
-| `mobile-navigation-rule` | Navigation architecture rules |
-
-### Mobile — Foundation (5)
-
-| Skill | Mô tả |
-|-------|-------|
-| `mobile-engineer-role` | Mobile engineer role, mindset, responsibilities |
-| `mobile-clean-code` | Clean code for mobile |
-| `mobile-coding-principles` | Core mobile coding principles |
-| `mobile-design-patterns` | Design patterns for mobile |
-| `mobile-naming-convention` | Naming rules for mobile code |
-
-### Mobile — React Native (5)
-
-| Skill | Mô tả |
-|-------|-------|
-| `react-native-project-structure` | Global layer project structure |
-| `react-native-component-rule` | Reusable component rules |
-| `react-native-hook-rule` | Custom hook rules |
-| `react-native-screen-rule` | Screen/view rules |
-| `react-native-native-module` | Native module bridge rules |
-
-### Mobile — State Management (8)
-
-| Skill | Mô tả |
-|-------|-------|
-| `state-redux-toolkit` | Redux Toolkit — slice, selector, store |
-| `state-redux-saga` | Redux Saga — async side effects |
-| `state-redux-observable` | Redux Observable — RxJS epics |
-| `state-redux-persist` | Redux Persist — state persistence |
-| `state-storage-mmkv` | MMKV high-performance storage |
-| `state-token-management` | Token storage — Keychain/Keystore |
-| `state-async-flow` | Async flow patterns |
-| `state-offline` | Offline state handling |
-
----
-
-## Cấu Trúc Repo
-
-```
+```text
 ai-skills/
-├── .claude-plugin/
-│   └── marketplace.json          ← marketplace registry
-├── plugins/
-│   └── ai-skills/
-│       ├── .claude-plugin/
-│       │   └── plugin.json       ← plugin metadata
-│       └── skills/
-│           ├── java-core/
-│           │   └── SKILL.md
-│           ├── springboot-rest-api/
-│           │   └── SKILL.md
-│           └── ...               ← 57 skills total
-├── claude/
-│   └── guidelines/               ← source guideline files (raw)
-├── .codex/                       ← Codex-specific guidelines
-└── codex-generate-skills-prompt.md  ← prompt để regenerate skills
+├── AGENTS.md                         # repo-level rules for Codex
+├── .codex/
+│   ├── AGENTS.md                     # Codex load order and separation rules
+│   ├── CODEX.md                      # Codex global contract
+│   ├── SKILL.md                      # Codex skill index
+│   ├── workflow/                     # Codex implementation workflow
+│   ├── skills/                       # Codex-ready skills, mirrored from Claude catalog
+│   └── templates/                    # Codex generation templates
+├── plugins/ai-skills/
+│   ├── CLAUDE.md                     # Claude global workflow
+│   ├── .claude-plugin/plugin.json    # Claude plugin metadata
+│   ├── workflow/                     # Claude implementation workflow
+│   ├── hooks/                        # Claude hook definitions
+│   ├── scripts/                      # Claude automation scripts
+│   └── skills/                       # Claude plugin skills
+└── claude/guidelines/                # raw source guidelines
 ```
 
----
+## Cross-Agent Rules
 
-## Cập Nhật / Thêm Skill Mới
+- Update `.codex/*` for Codex behavior.
+- Update `plugins/ai-skills/*` for Claude plugin behavior.
+- Do not make one assistant depend on the other's runtime files.
+- When changing shared policy, mirror the intent in both assistant-specific locations.
+- When adding Claude plugin skills that should be available to Codex, copy the skill folder into `.codex/skills/` and update `.codex/SKILL.md`.
+- Keep fintech production rules mandatory: security, validation, observability, idempotency, rollback, and sensitive-data masking.
 
-1. Thêm guideline vào `claude/guidelines/<category>/<skill-name>.md`
-2. Tạo `plugins/ai-skills/skills/<skill-name>/SKILL.md` theo format:
+## Shared Implementation Workflow
 
-```markdown
----
-name: <skill-name>
-description: <one sentence — what this skill covers and when to use it>
----
+Both assistant tracks should follow the same intent:
 
-# Title
-
-## When to Use This Skill
-
-- ...
-
-## Content
-
-...
-
-## Mandatory For AI Code Generation
-
-- ...
-```
-
-3. Commit và push lên GitHub
-4. Restart Claude Code trên mọi máy để pull version mới
-
----
-
-## Tái Tạo Toàn Bộ Skills
-
-Nếu muốn gen lại 57 skills từ source guidelines, dùng file prompt:
-
-```
-codex-generate-skills-prompt.md
-```
-
-Đưa file này + toàn bộ thư mục `claude/guidelines/` cho AI (Codex/Claude) để generate.
+1. Planning/file-scope gate.
+2. Architecture design when the change crosses layers, services, async flows, or contracts.
+3. Source structure check before edits.
+4. Implementation with clean code, security, and separation rules.
+5. Behavior-focused tests.
+6. Test/build/coverage validation, target coverage >= 90% where tooling supports it.
+7. Version guide for meaningful implementation work.

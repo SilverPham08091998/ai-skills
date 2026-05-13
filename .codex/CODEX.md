@@ -2,7 +2,7 @@
 
 ## Purpose
 
-This file defines the **global operating system rules** for AI-assisted software generation in this repository.
+This file defines the **global operating system rules** for AI-assisted software generation using the ai-skills rule set.
 
 It acts as the **highest authority rule set** overriding all other guidelines.
 
@@ -11,6 +11,77 @@ It is designed for:
 * AI coding agents (Codex / GPT / internal generators)
 * Senior backend engineering standards
 * Fintech / banking / microservice production systems
+* Centralized multi-assistant skill and rule management
+* Codex work launched from any project folder
+
+---
+
+# 0. Repository Operating Rules
+
+## 0.1 Centralized AI Skills Model
+
+This repository is the source of truth for multiple AI assistants:
+
+* Codex rules and skills live under `.codex/`
+* Claude Code plugin rules and skills live under `plugins/ai-skills/`
+* Shared engineering intent must remain aligned across assistants
+* Assistant-specific files must remain isolated
+
+## 0.1.1 Global Rule Root
+
+Codex may be invoked from any project folder. In that case:
+
+* The ai-skills repository is the **rule root**
+* The user's current project is the **target project**
+* Codex reads `.codex/` rules, workflows, commands, templates, and skills from the rule root
+* Codex edits and validates files in the target project
+
+Resolve the rule root in this order:
+
+1. `AI_SKILLS_HOME`
+2. `CODEX_AI_SKILLS_HOME`
+3. `/home/tinhpn2/Documents/ai-skills`
+4. Current repository root, only if it contains `.codex/CODEX.md`
+
+Never assume the target project contains these rules. Do not copy rules into the target project unless the user explicitly requests installation.
+
+## 0.2 Planning Gate
+
+Before implementing any code, refactor, generated artifact, or repository rule update, Codex MUST:
+
+1. Present a TODO list with the full steps.
+2. Present the files expected to be created or modified.
+3. Wait for explicit user confirmation such as `ok`, `confirm`, `làm đi`, `yes`, or `proceed`.
+4. Implement only after approval and follow the workflow order.
+
+Files already listed in an approved scope may be edited without asking again.
+
+## 0.3 Out-of-Scope File Changes
+
+If a required edit is outside the approved TODO/file list, Codex MUST stop and ask first:
+
+```text
+Cần sửa thêm file ngoài scope đã liệt kê:
+- File: `path/to/file.ts`
+- Làm gì: mô tả thay đổi cụ thể
+- Tại sao: lý do kỹ thuật bắt buộc phải sửa file này
+Bạn có đồng ý không?
+```
+
+Only proceed after clear user approval.
+
+## 0.4 Mandatory Implementation Workflow
+
+For feature implementation, code generation, or meaningful refactor work, execute these steps in order:
+
+1. `<ai-skills-rule-root>/.codex/workflow/01-architecture.md`
+2. `<ai-skills-rule-root>/.codex/workflow/02-structure-check.md`
+3. `<ai-skills-rule-root>/.codex/workflow/03-coding.md`
+4. `<ai-skills-rule-root>/.codex/workflow/04-unit-tests.md`
+5. `<ai-skills-rule-root>/.codex/workflow/05-coverage.md`
+6. `<ai-skills-rule-root>/.codex/workflow/06-version-guide.md`
+
+Each step must be completed before moving to the next. If tests, build, or coverage fail, stop, report the failure, and fix before continuing. Step 06 version guide is mandatory.
 
 ---
 
