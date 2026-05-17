@@ -1,4 +1,4 @@
-# Step 06 — Version Guide (Markdown Documentation)
+# Step 07 — Version Guide (Markdown Documentation)
 
 ## Mục đích
 Ghi lại toàn bộ những gì đã làm trong lần implement này — để team có thể review, onboard, hoặc rollback khi cần.
@@ -14,7 +14,7 @@ Nếu không có thư mục `docs/`, tạo ở root project.
 # [Feature Name] — Version Guide
 **Date:** YYYY-MM-DD
 **Author:** Claude + <user>
-**Version:** vX.Y.Z hoặc commit hash
+**Version:** vX.Y.Z / branch name / pending commit
 
 ---
 

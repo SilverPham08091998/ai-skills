@@ -1,4 +1,4 @@
-# Step 05 — Run Tests & Coverage Check
+# Step 06 — Run Tests & Coverage Check
 
 ## Yêu cầu bắt buộc
 - Tất cả test phải **PASS**
@@ -59,7 +59,7 @@ cargo tarpaulin --out Stdout --fail-under 90
 ```
 ✅ All tests passed
 ✅ Coverage: 93.5% (≥ 90% required)
-→ Tiếp tục Step 06
+→ Tiếp tục Step 07
 ```
 
 ### Nếu FAIL hoặc Coverage < 90%
@@ -69,10 +69,10 @@ cargo tarpaulin --out Stdout --fail-under 90
    - UserService.java line 45-52: edge case khi list rỗng
    - UserMapper.java line 23: null handling
 → Viết thêm test cases cho các case trên
-→ Chạy lại từ đầu Step 05
+→ Chạy lại từ đầu Step 06
 ```
 
-## Checklist trước khi qua Step 06
+## Checklist trước khi qua Step 07
 - [ ] Tất cả test PASS (0 failures, 0 errors)
 - [ ] Coverage ≥ 90% cho code mới
 - [ ] Không có test bị skip/disabled để đạt coverage

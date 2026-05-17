@@ -1,5 +1,11 @@
 # Step 01 — Architecture Design
 
+## Điều kiện bắt buộc trước Step 01
+
+Chỉ bắt đầu vẽ architecture sau khi Step 00 — Context Discovery & Solution Alignment đã hoàn tất.
+
+Nếu chưa hiểu đủ context, chưa restate yêu cầu, chưa phân tích prompt gaps, hoặc chưa align hướng giải quyết với user, phải quay lại Step 00.
+
 ## Khi nào cần vẽ kiến trúc
 
 Bắt buộc vẽ nếu chức năng có **bất kỳ** điều kiện sau:
@@ -55,6 +61,7 @@ Errors:   400 Bad Request, 404 Not Found, 500 Internal Server Error
 Mô tả các entity/table/model mới hoặc thay đổi.
 
 ## Checklist trước khi qua Step 02
+- [ ] Step 00 đã hoàn tất và context đủ để thiết kế
 - [ ] Component diagram đã vẽ (nếu cần)
 - [ ] Sequence diagram đã vẽ (nếu có async/multi-step)
 - [ ] API contract đã định nghĩa (nếu có endpoint mới)
