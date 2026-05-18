@@ -5,8 +5,8 @@
         "matcher": "Write|Edit|MultiEdit",
         "hooks": [
           {
-            "type": "prompt",
-            "prompt": "Check if the assistant has already presented a TODO list and received explicit user approval before this file write/edit. Look at the conversation history. If a TODO was shown AND the user approved (said ok, yes, làm đi, proceed, go ahead, done, confirm, comfirk, or similar), output {\"decision\": \"allow\"}. If no TODO was shown or user has not approved yet, output {\"decision\": \"block\", \"reason\": \"Cần present TODO list và chờ user approve trước khi implement.\"}",
+            "type": "command",
+            "command": "SCRIPT=\"${CLAUDE_PLUGIN_ROOT}/scripts/check-todo-approval.sh\"; if [ ! -f \"$SCRIPT\" ]; then SCRIPT=\"$HOME/.claude/scripts/check-todo-approval.sh\"; fi; bash \"$SCRIPT\"",
             "statusMessage": "Checking TODO approval..."
           },
           {
