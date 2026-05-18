@@ -36,6 +36,24 @@ Goals:
 * Enforce application policies
 * Keep controller thin
 
+Package structure:
+
+```text
+application/
+├── usecases/                  ← use case interfaces grouped by domain
+│   └── <domain>/
+│       └── impl/              ← use case implementations
+├── services/                  ← application services (cross-usecase helpers)
+├── events/                    ← event schema / message models (Kafka payload types, NOT consumers)
+├── dtos/                      ← commands, queries, result objects
+├── mappers/                   ← application-level mappers (if needed)
+└── ports/                     ← output port interfaces (implemented by infrastructure)
+    ├── clients/               ← external service ports (FeeServicePort, MfaServicePort)
+    ├── persistence/           ← repository ports (PaymentAccountRepositoryPort)
+    ├── messaging/             ← outbound messaging ports (StatementJobPublisherPort)
+    └── observability/         ← metrics ports (OperationalMetricsPort)
+```
+
 Rule:
 `Application layer controls the flow, not the business essence.`
 
@@ -109,30 +127,31 @@ Command contains input required by use case only.
 
 # STEP 6 — USECASE RULES
 
-Use one class per use case.
+Use one class per use case. Group by domain under `usecases/<domain>/impl/`.
 
-Examples:
-
-* TransferUseCase
-* CreateOrderUseCase
-* RefundPaymentUseCase
-* VerifyOtpUseCase
+```text
+usecases/
+├── payment/
+│   ├── OpenPaymentAccountUseCase.java        ← interface
+│   ├── LockPaymentAccountUseCase.java
+│   └── impl/
+│       ├── OpenPaymentAccountUseCaseImpl.java ← implementation
+│       └── LockPaymentAccountUseCaseImpl.java
+├── savings/
+│   └── impl/
+├── statement/
+│   └── impl/
+└── operations/
+    └── impl/
+```
 
 Prefer single public method:
 
 ```java
-execute(...)
-
-handle(...)
-
-run(...)
-```
-
-Preferred:
-
-```java
 PaymentResult execute(CreatePaymentCommand cmd)
 ```
+
+Use case interface is what the controller depends on. Implementation is in `impl/` and wired by Spring.
 
 ---
 
@@ -161,18 +180,32 @@ Avoid giant transaction with remote API calls.
 
 # STEP 8 — PORTS RULES
 
-Depend on interfaces only.
+Depend on port interfaces only — never import infrastructure implementation directly.
 
-Examples:
+Ports are categorized into 4 groups under `application/ports/`:
+
+| Category | Package | Examples |
+|----------|---------|---------|
+| External clients | `ports/clients/` | `FeeServicePort`, `MfaServicePort`, `CoreBankingPort` |
+| Persistence | `ports/persistence/` | `PaymentAccountRepositoryPort`, `UserRepositoryPort` |
+| Outbound messaging | `ports/messaging/` | `StatementJobPublisherPort` |
+| Observability | `ports/observability/` | `OperationalMetricsPort` |
 
 ```java
-WalletRepositoryPort
-        PaymentGatewayPort
-LedgerPostingPort
-        NotificationPort
+// ports/clients/MfaServicePort.java
+public interface MfaServicePort {
+    MfaInitResult initiate(String transactionId, String productCode, String userId);
+    MfaVerifyResult verify(String challengeId, String userId, String mfaCode);
+}
+
+// ports/persistence/PaymentAccountRepositoryPort.java
+public interface PaymentAccountRepositoryPort {
+    Optional<PaymentAccount> findByAccountNo(String accountNo);
+    PaymentAccount save(PaymentAccount account);
+}
 ```
 
-Application uses ports, infra implements them.
+Application uses ports, infrastructure implements them.
 
 ---
 
@@ -293,27 +326,31 @@ Avoid:
 
 When generating application layer:
 
-1. Create one UseCase per feature
-2. Input = Command / Query
-3. Output = Result object
-4. Depend on ports only
-5. Add transaction where needed
-6. Keep orchestration readable
-7. Throw domain/business exceptions
-8. Generate unit tests
+1. Group use cases by domain: `usecases/<domain>/` with interface + `impl/`
+2. Input = Command / Query (in `dtos/`)
+3. Output = Result object (in `dtos/`)
+4. Depend on port interfaces only — never import infrastructure class
+5. Categorize ports: `ports/clients/`, `ports/persistence/`, `ports/messaging/`, `ports/observability/`
+6. Place event schema/payload classes in `application/events/` — NOT consumers (consumers go in `controllers/events/consumers/`)
+7. Add `@Transactional` where needed
+8. Keep orchestration readable
+9. Throw domain/business exceptions — never return null
+10. Generate unit tests with mocked ports
 
 ---
 
 # FINAL CHECKLIST
 
-* [ ] One use case per feature
-* [ ] Uses command/query models
-* [ ] Depends on ports only
+* [ ] Use cases grouped by domain in `usecases/<domain>/impl/`
+* [ ] Input = Command/Query, Output = Result (all in `dtos/`)
+* [ ] Ports categorized: `clients/`, `persistence/`, `messaging/`, `observability/`
+* [ ] Event schema/models in `application/events/` — NOT consumers
+* [ ] Depends on port interfaces only — no infrastructure import
 * [ ] Transaction boundary correct
-* [ ] Returns result object
-* [ ] No HTTP logic
-* [ ] Tested with mocks
-* [ ] Flow readable and maintainable
+* [ ] No HTTP logic, no `ResponseEntity`
+* [ ] Throws named business exceptions, never returns null
+* [ ] Tested with mocked ports
+
 
 ## Mandatory For AI Code Generation
 

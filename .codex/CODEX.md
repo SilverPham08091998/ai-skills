@@ -100,6 +100,46 @@ For questions, explanations, skill/rule reading, repository orientation, or pre-
 
 Ask must research local target-project or ai-skills context first when it may answer the question. Outside knowledge is secondary and should be used only as support or fallback. Ask must not edit files, run implementation validation, or create version guides.
 
+## 0.5b Mandatory Fix-Bug Workflow
+
+For bug diagnosis, defect fixing, failing tests, runtime errors, or regressions, execute these steps in order:
+
+1. `<ai-skills-rule-root>/.codex/workflow/fix-bug/00-context-alignment.md`
+2. `<ai-skills-rule-root>/.codex/workflow/fix-bug/01-reproduce.md`
+3. `<ai-skills-rule-root>/.codex/workflow/fix-bug/02-root-cause.md`
+4. `<ai-skills-rule-root>/.codex/workflow/fix-bug/03-impact-analysis.md`
+5. `<ai-skills-rule-root>/.codex/workflow/fix-bug/04-fix.md`
+6. `<ai-skills-rule-root>/.codex/workflow/fix-bug/05-verify.md`
+7. `<ai-skills-rule-root>/.codex/workflow/fix-bug/06-pre-commit.md`
+
+Do not jump to fixing before reproducing and identifying root cause. Step 06 is mandatory before any user-requested commit.
+
+## 0.5c Mandatory Refactor Workflow
+
+For code refactoring, code quality improvement, or restructuring layers per Clean Architecture, execute these steps in order:
+
+1. `<ai-skills-rule-root>/.codex/workflow/refactor/00-context-alignment.md`
+2. `<ai-skills-rule-root>/.codex/workflow/refactor/01-behavior-baseline.md`
+3. `<ai-skills-rule-root>/.codex/workflow/refactor/02-analysis.md`
+4. `<ai-skills-rule-root>/.codex/workflow/refactor/03-refactor-plan.md`
+5. `<ai-skills-rule-root>/.codex/workflow/refactor/04-coding.md`
+6. `<ai-skills-rule-root>/.codex/workflow/refactor/05-verify.md`
+7. `<ai-skills-rule-root>/.codex/workflow/refactor/06-pre-commit.md`
+
+Refactor must never add new behavior. Behavior baseline (test coverage ≥ 90%) is mandatory before any code change. Step 06 is mandatory before any user-requested commit.
+
+## 0.5d Mandatory Review Workflow
+
+For code review, PR review, risk assessment, or quality findings, execute these steps in order:
+
+1. `<ai-skills-rule-root>/.codex/workflow/review/00-context-alignment.md`
+2. `<ai-skills-rule-root>/.codex/workflow/review/01-collect.md`
+3. `<ai-skills-rule-root>/.codex/workflow/review/02-analyze.md`
+4. `<ai-skills-rule-root>/.codex/workflow/review/03-report.md`
+5. `<ai-skills-rule-root>/.codex/workflow/review/04-fix-suggestions.md`
+
+Review must not edit files unless the user explicitly requests a fix after reading the report.
+
 ## 0.6 Intent Routing
 
 Before choosing an ask, implementation, review, refactor, bug-fix, skill-update, or sync workflow, use:

@@ -15,7 +15,7 @@ This Codex skill adapts `backend-engineer/clean-architecture/infrastructure-rule
 
 ## Source Guidelines
 
-# .claude/guidelines/clean-architecture/infrastructure-rule.md
+# .codex/guidelines/clean-architecture/infrastructure-rule.md
 
 # Clean Architecture Infrastructure Layer Rules
 
@@ -25,16 +25,35 @@ This Codex skill adapts `backend-engineer/clean-architecture/infrastructure-rule
 
 Infrastructure layer handles all technical details and external systems.
 
-It implements ports defined by inner layers.
+It contains only **output adapters** — it implements ports defined by the application layer.
 
-Goals:
+> **Important distinction:**
+> - Kafka **producers** (outbound) → `infrastructure/adapters/messaging/`
+> - Kafka **consumers** (inbound) → `controllers/events/consumers/` (entry point layer)
 
-* Connect database
-* Call third-party services
-* Publish / consume messages
-* Cache data
-* Handle file storage
-* Provide technical integrations
+Package structure:
+
+```text
+infrastructure/
+├── adapters/
+│   ├── persistence/           ← JPA adapter (implements persistence ports)
+│   │   ├── repositories/      ← Spring Data JPA interfaces
+│   │   ├── entities/          ← @Entity classes
+│   │   └── mappers/           ← Entity ↔ Domain (MapStruct)
+│   ├── messaging/             ← Kafka PRODUCER adapters (implements messaging ports)
+│   │   └── events/            ← outbound Kafka event classes
+│   ├── scheduler/             ← @Scheduled job adapters
+│   └── observability/         ← Micrometer / tracing adapters
+├── client/                    ← external service Feign clients
+│   └── <service-name>/        ← one sub-package per external service
+│       ├── <Service>Adapter.java   ← implements clients port
+│       ├── client/            ← FeignClient + Config + Interceptor + Properties
+│       ├── request/           ← request DTOs for external service
+│       ├── response/          ← response DTOs from external service
+│       └── mapper/            ← MapStruct: domain/command ↔ external DTOs
+├── config/                    ← Spring @Configuration
+└── web/                       ← filters, interceptors, CORS
+```
 
 Rule:
 `Infrastructure serves the business. Business must not depend on infrastructure.`
@@ -102,72 +121,127 @@ Infrastructure implements interfaces from inner layers.
 
 # STEP 5 — PERSISTENCE RULES
 
-Use persistence adapters.
+Package: `infrastructure/adapters/persistence/`
 
-Example:
+```text
+adapters/persistence/
+├── repositories/      ← Spring Data JPA interfaces (JpaRepository)
+├── entities/          ← @Entity classes (DB schema representation)
+└── mappers/           ← MapStruct Entity ↔ Domain mappers
+```
+
+Adapter implements persistence port:
 
 ```java
-
+@Component
 @RequiredArgsConstructor
-public class WalletRepositoryAdapter implements WalletRepositoryPort {
+public class PaymentAccountRepositoryAdapter implements PaymentAccountRepositoryPort {
 
-    private final WalletJpaRepository repo;
-    private final WalletEntityMapper mapper;
+    private final PaymentAccountJpaRepository jpaRepository;
+    private final PaymentAccountEntityMapper mapper;
+
+    @Override
+    public Optional<PaymentAccount> findByAccountNo(String accountNo) {
+        return jpaRepository.findByAccountNo(accountNo)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public PaymentAccount save(PaymentAccount account) {
+        return mapper.toDomain(jpaRepository.save(mapper.toEntity(account)));
+    }
 }
 ```
 
-Responsibilities:
-
-* Convert Entity <-> Domain
-* Execute DB operations
-* Hide ORM details
-
-Never expose JPA entity upward.
+Rules:
+* Convert Entity ↔ Domain using MapStruct mapper in `mappers/`
+* Never expose `@Entity` class to application or controller layer
+* Never put business logic inside adapter methods
 
 ---
 
 # STEP 6 — EXTERNAL CLIENT RULES
 
-Examples:
+Package: `infrastructure/client/<service-name>/`
 
-* Payment gateway client
-* Bank API client
-* Fraud engine client
-* Notification provider
+Each external service gets its own sub-package:
 
-Use:
+```text
+client/
+└── mfa/
+    ├── MfaServiceAdapter.java          ← implements MfaServicePort (from application/ports/clients/)
+    ├── client/
+    │   ├── MfaServiceFeignClient.java  ← @FeignClient interface
+    │   ├── MfaServiceFeignConfig.java  ← Feign config (encoder, decoder, etc.)
+    │   ├── MfaServiceInterceptor.java  ← request interceptor (add headers, auth)
+    │   └── MfaServiceProperties.java  ← @ConfigurationProperties (url, timeout, etc.)
+    ├── request/                        ← DTOs sent to external service
+    ├── response/                       ← DTOs received from external service
+    └── mapper/                         ← MapStruct: command/domain ↔ request/response DTOs
+```
 
-* Feign
-* WebClient
-* RestTemplate (legacy)
+`<Service>Adapter.java` is placed at the root of the service package (not inside `client/`):
 
-Handle:
+```java
+@Component
+@RequiredArgsConstructor
+public class MfaServiceAdapter implements MfaServicePort {
 
-* Timeout
-* Retry
-* Circuit breaker
-* Error mapping
+    private final MfaServiceFeignClient feignClient;
+    private final MfaServiceMapper mapper;
+
+    @Override
+    public MfaInitResult initiate(String transactionId, String productCode, String userId) {
+        return mapper.toInitResult(feignClient.initiate(
+                mapper.toInitRequest(transactionId, productCode, userId)));
+    }
+}
+```
+
+Rules:
+* Adapter implements the `ports/clients/` interface — application never imports Feign directly
+* Use MapStruct mapper in `mapper/` — no `new RequestDto(a, b, c, d)`
+* Handle timeout, retry, circuit breaker at Feign config level
+* Map external exceptions to domain exceptions in the adapter
 
 ---
 
 # STEP 7 — MESSAGING RULES
 
-Kafka / RabbitMQ adapters:
+Package: `infrastructure/adapters/messaging/`
+
+> **This package contains PRODUCERS only.**
+> Kafka consumers (input) live in `controllers/events/consumers/`.
+
+```text
+adapters/messaging/
+├── KafkaStatementJobPublisherAdapter.java   ← implements StatementJobPublisherPort
+├── KafkaStatementNotificationAdapter.java
+└── events/                                  ← outbound Kafka event payload classes
+    └── AccountBlockRequestedEvent.java
+```
 
 Producer responsibilities:
+* Implement messaging port from `application/ports/messaging/`
+* Serialize domain events to Kafka messages
+* Add required headers (trace-id, timestamp, etc.)
+* Publish reliably — use outbox pattern for critical flows
 
-* Serialize events
-* Add headers
-* Publish reliably
+```java
+@Component
+@RequiredArgsConstructor
+public class KafkaStatementJobPublisherAdapter implements StatementJobPublisherPort {
 
-Consumer responsibilities:
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-* Deserialize
-* Validate schema
-* Call UseCase
-* Handle retry / DLQ
+    @Override
+    public void publish(StatementJobRequestedEvent event) {
+        kafkaTemplate.send(STATEMENT_JOB_TOPIC, event.getAccountNo(), event);
+    }
+}
+```
 
-No business logic inside consumer listener.
+No business logic inside producer. Serialize and publish only.
 
 ---
 
@@ -271,26 +345,32 @@ Avoid:
 
 When generating infrastructure layer:
 
-1. Implement ports only
-2. Keep technical concerns isolated
-3. Add entity/domain mappers
-4. Configure timeout/retry
-5. Handle exceptions cleanly
-6. No business rules
-7. Generate integration tests
+1. `adapters/persistence/` — `{repositories/, entities/, mappers/}` — use MapStruct for entity↔domain
+2. `adapters/messaging/` — producers only, implement messaging port, no business logic
+3. `adapters/scheduler/` — `@Scheduled` adapters, call use cases
+4. `adapters/observability/` — Micrometer metrics, implement observability port
+5. `client/<service>/` — `{<Service>Adapter.java, client/, request/, response/, mapper/}` per external service
+6. Adapter always implements a port from `application/ports/`
+7. Use MapStruct mapper in `mapper/` for all cross-layer conversions — no `new Dto(a,b,c,d)`
+8. Handle timeout/retry/circuit breaker at Feign config level
+9. Map external exceptions → domain exceptions inside adapter
+10. Generate integration tests (Testcontainers for DB, WireMock for external APIs)
 
 ---
 
 # FINAL CHECKLIST
 
-* [ ] Ports implemented
-* [ ] No business logic
-* [ ] Entity hidden from upper layers
-* [ ] Clients have timeout/retry
-* [ ] Messaging isolated
-* [ ] Secrets externalized
-* [ ] Integration tested
-* [ ] Replaceable adapters
+* [ ] `adapters/persistence/` has `{repositories/, entities/, mappers/}`
+* [ ] `adapters/messaging/` contains producers only — no consumers
+* [ ] `adapters/scheduler/` and `adapters/observability/` exist if needed
+* [ ] Each external service has its own `client/<service>/` sub-package
+* [ ] `<Service>Adapter.java` at root of service package, implements `ports/clients/` interface
+* [ ] MapStruct mapper in `client/<service>/mapper/` — no `new Dto(a,b,c,d)`
+* [ ] No business logic in any adapter
+* [ ] `@Entity` never exposed to application or controller layer
+* [ ] Secrets externalized — no hardcoded URLs or credentials
+* [ ] Integration tested (Testcontainers, WireMock)
+
 
 ## Mandatory For AI Code Generation
 

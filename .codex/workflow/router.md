@@ -23,9 +23,9 @@ User request
 |---|---|---|
 | `ask` | The user asks a question, wants explanation, context, comparison, or pre-implementation discovery | `.codex/workflow/ask.md` |
 | `implement` | The user asks to add a feature, generate code, make a meaningful edit, or implement a planned change | `.codex/workflow/implement/*.md` |
-| `fix-bug` | The user asks to diagnose and fix a defect, failing behavior, failing test, runtime error, or regression | Planned |
-| `review` | The user asks for code review, PR review, risk assessment, or findings | Existing `codex-review` command |
-| `refactor` | The user asks to restructure code while preserving behavior | Planned |
+| `fix-bug` | The user asks to diagnose and fix a defect, failing behavior, failing test, runtime error, or regression | `.codex/workflow/fix-bug/` |
+| `review` | The user asks for code review, PR review, risk assessment, or findings | `.codex/workflow/review/` |
+| `refactor` | The user asks to restructure code while preserving behavior, or reorganize layers per Clean Architecture | `.codex/workflow/refactor/` |
 | `update-skill` | The user asks to update a Codex skill or rule file | Existing `codex-update-skill` command |
 | `sync-rules` | The user asks to align Codex rules with Claude plugin rules | Existing `codex-sync-claude-rules` command |
 
@@ -35,7 +35,7 @@ User request
 - If the user uses action verbs like "add", "implement", "create", "generate", or "build", default to `implement`.
 - If the user says "fix", "bug", "error", "failing", "broken", or provides a failing test/log, default to `fix-bug`.
 - If the user says "review", default to `review`.
-- If the user says "refactor", "clean up", or "restructure" while preserving behavior, default to `refactor`.
+- If the user says "refactor", "clean up", "restructure", "clean architecture", "sai layer", "wrong layer", or "apply clean arch", default to `refactor`.
 
 ## Ambiguous Requests
 
@@ -56,6 +56,9 @@ Do not ask when the intent is already clear from the user's wording.
 ## Workflow Boundaries
 
 - `ask` must not edit files.
-- `implement` must use the six-step implementation workflow under `.codex/workflow/implement/`.
-- Planned workflows may temporarily fall back to `codex-implement` only after the user confirms an edit scope.
+- `implement` must use the step-by-step workflow under `.codex/workflow/implement/`.
+- `fix-bug` must use `.codex/workflow/fix-bug/`.
+- `review` must use `.codex/workflow/review/`.
+- `refactor` must use `.codex/workflow/refactor/` — never fall back to `implement` for refactor/restructure requests.
+- `update-skill` and `sync-rules` use their existing codex commands.
 - Switching from `ask` to an edit workflow requires explicit user intent to proceed.

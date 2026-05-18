@@ -23,17 +23,17 @@ User request
 |---|---|---|
 | `ask` | The user asks a question, wants explanation, context, comparison, or pre-implementation discovery | `workflow/ask.md` |
 | `implement` | The user asks to add a feature, generate code, make a meaningful edit, or implement a planned change | `workflow/implement/*.md` |
-| `fix-bug` | The user asks to diagnose and fix a defect, failing behavior, failing test, runtime error, or regression | Planned |
-| `review` | The user asks for code review, PR review, risk assessment, or findings | Planned |
-| `refactor` | The user asks to restructure code while preserving behavior | Planned |
+| `fix-bug` | The user asks to diagnose and fix a defect, failing behavior, failing test, runtime error, or regression | `workflow/fix-bug/` |
+| `review` | The user asks for code review, PR review, risk assessment, or findings | `workflow/review/` |
+| `refactor` | The user asks to restructure code while preserving behavior, or reorganize layers per Clean Architecture | `workflow/refactor/` |
 
 ## Defaults
 
 - If the user is trying to understand before deciding what to build, default to `ask`.
 - If the user uses action verbs like "add", "implement", "create", "generate", or "build", default to `implement`.
-- If the user says "fix", "bug", "error", "failing", "broken", or provides a failing test/log, default to `fix-bug`.
+- If the user says "fix", "bug", "lỗi", "error", "failing", "broken", or provides a failing test/log/stacktrace, default to `fix-bug`.
 - If the user says "review", default to `review`.
-- If the user says "refactor", "clean up", or "restructure" while preserving behavior, default to `refactor`.
+- If the user says "refactor", "clean up", "restructure", "clean architecture", "sai layer", "wrong layer", or "apply clean arch", default to `refactor`.
 
 ## Ambiguous Requests
 
@@ -55,5 +55,5 @@ Do not ask when the intent is already clear from the user's wording.
 
 - `ask` must not edit files.
 - `implement` must use the step-by-step workflow under `workflow/implement/`.
-- Planned workflows may temporarily fall back to `implement` only after the user confirms an edit scope.
+- `refactor` must use `workflow/refactor/` — never fall back to `implement` for refactor/restructure requests.
 - Switching from `ask` to an edit workflow requires explicit user intent to proceed.

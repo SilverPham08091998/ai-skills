@@ -15,7 +15,7 @@ This Codex skill adapts `backend-engineer/clean-architecture/controller-rule.md`
 
 ## Source Guidelines
 
-# .claude/guidelines/clean-architecture/controller-rule.md
+# .codex/guidelines/clean-architecture/controller-rule.md
 
 # Clean Architecture Controller Rules
 
@@ -23,18 +23,27 @@ This Codex skill adapts `backend-engineer/clean-architecture/controller-rule.md`
 
 # STEP 1 — OBJECTIVE
 
-Controller layer is the entry point of the system.
+Controller layer is the **entry point** of the system. It contains two types of input adapters — both live in the `controllers/` top-level package and both call application use cases.
 
-Its job is only to:
+| Type | Package | Trigger |
+|------|---------|---------|
+| HTTP Controllers | `controllers/` | REST HTTP request |
+| Event Consumers | `controllers/events/consumers/` | Kafka / messaging event |
 
-* Receive requests
-* Validate input
-* Transform request DTO to command/query
-* Call application use case
-* Return standardized response
+Package structure:
+
+```text
+controllers/
+├── <Domain>Controller.java    ← HTTP input adapter
+├── request/                   ← HTTP request DTOs
+├── response/                  ← HTTP response DTOs
+├── mapper/                    ← MapStruct: Request→Command, Domain→Response
+└── events/
+    └── consumers/             ← Kafka @KafkaListener → call use cases
+```
 
 Rule:
-`Controller must be thin. No business logic allowed.`
+`Controller must be thin. No business logic allowed. Both HTTP and event consumers follow the same rule.`
 
 ---
 
@@ -84,15 +93,30 @@ save(...);
 
 # STEP 4 — STANDARD FLOW
 
+## HTTP Flow
+
 ```text
 HTTP Request
 -> Controller
--> Validate DTO
--> Map to Command
+-> Validate DTO (@Valid, @NotBlank, ...)
+-> Map to Command (MapStruct mapper)
 -> Call UseCase
--> Map Result to Response
--> Return HTTP Response
+-> Map Result to Response (MapStruct mapper)
+-> Return ResponseEntity
 ```
+
+## Messaging Flow
+
+```text
+Kafka Event
+-> @KafkaListener (controllers/events/consumers/)
+-> Deserialize payload (from application/events/ schema)
+-> Map to Command if needed (MapStruct mapper)
+-> Call UseCase
+-> (no response — async)
+```
+
+Both flows: **call use case only, no business logic, no DB access.**
 
 ---
 
@@ -227,22 +251,41 @@ Controller should NOT verify JWT manually.
 
 # STEP 11 — CLEAN EXAMPLE
 
+## HTTP Controller
+
 ```java
-
 @RestController
+@RequestMapping("/api/v1/payment-accounts")
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/transfers")
-public class TransferController {
+public class PaymentAccountController {
 
-    private final TransferUseCase useCase;
-    private final TransferMapper mapper;
+    private final OpenPaymentAccountUseCase openPaymentAccountUseCase;
+    private final PaymentAccountControllerMapper mapper;
 
     @PostMapping
-    public ResponseEntity<TransferResponse> transfer(
-            @Valid @RequestBody TransferRequest request) {
+    public ResponseEntity<BaseResponse<PaymentAccountOperationResponse>> open(
+            @RequestBody @Valid OpenPaymentAccountRequest request) {
+        return ResponseEntity.ok(BaseResponse.ok(
+                mapper.toResponse(openPaymentAccountUseCase.execute(
+                        mapper.toCommand(request)))));
+    }
+}
+```
 
-        var result = useCase.execute(mapper.toCommand(request));
-        return ResponseEntity.ok(mapper.toResponse(result));
+## Event Consumer (controllers/events/consumers/)
+
+```java
+@Component
+@RequiredArgsConstructor
+public class CoreBankingEventConsumer {
+
+    private final SyncPaymentAccountUseCase syncPaymentAccountUseCase;
+    private final CoreBankingEventMapper mapper;
+
+    @KafkaListener(topics = "${kafka.topics.corebanking-events}")
+    public void consume(CoreBankingEventMessage message) {
+        syncPaymentAccountUseCase.execute(
+                mapper.toCommand(message.getPayload()));
     }
 }
 ```
@@ -307,30 +350,33 @@ Avoid:
 
 # STEP 15 — GENERATOR RULES FOR AI
 
-When generating controller:
+When generating controller layer:
 
-1. Use REST conventions
-2. Keep methods thin
-3. Use Request/Response DTO
-4. Validate with annotations
-5. Call UseCase only
-6. Use mapper
-7. Return proper status code
-8. No business logic
-9. Generate controller tests
+1. Place HTTP controllers in `controllers/` (top-level package)
+2. Place Kafka consumers in `controllers/events/consumers/`
+3. Sub-packages: `request/`, `response/`, `mapper/` under `controllers/`
+4. Keep methods thin — validate + map + delegate only
+5. Use MapStruct mapper in `controllers/mapper/` for all Request→Command and Domain→Response conversions
+6. Call UseCase only — never call repository or infrastructure directly
+7. HTTP: return proper status code with `ResponseEntity`
+8. Kafka consumer: `@KafkaListener`, deserialize payload, call use case, no return
+9. No business logic in either type
+10. Generate tests: `@WebMvcTest` + MockMvc for HTTP, unit test with mock use case for consumer
 
 ---
 
 # FINAL CHECKLIST
 
-* [ ] Thin controller
-* [ ] DTO separated
-* [ ] Validation present
-* [ ] UseCase invoked
-* [ ] No repository call
-* [ ] No business logic
-* [ ] Standard response
-* [ ] Tested with MockMvc
+* [ ] HTTP controllers in `controllers/` with `request/`, `response/`, `mapper/`
+* [ ] Kafka consumers in `controllers/events/consumers/`
+* [ ] Controller is thin — validate + map + delegate only
+* [ ] MapStruct mapper used — no manual field copy, no `new A(a,b,c,d)`
+* [ ] UseCase invoked — no repository or infrastructure call
+* [ ] No business logic in either HTTP or event consumer
+* [ ] Standard response envelope (`BaseResponse`) for HTTP
+* [ ] HTTP: tested with `@WebMvcTest` + MockMvc
+* [ ] Event consumer: tested with mocked use case
+
 
 ## Mandatory For AI Code Generation
 

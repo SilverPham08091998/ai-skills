@@ -23,57 +23,58 @@ This skill converts `backend-engineer/clean-architecture/common.md` into Claude 
 
 # STEP 1 — OBJECTIVE
 
-`common` package is a shared internal package containing reusable technical components used across layers.
+`shared` package (also seen as `common` in some projects) is a cross-cutting package containing reusable technical components used across all layers.
 
 Purpose:
 
 * Reduce duplication
 * Centralize constants
 * Provide safe reusable utilities
-* Standardize shared models
+* Standardize shared response models
 * Keep business modules clean
 
 Rule:
-`common package supports layers, but must not become a dumping ground.`
+`shared package supports layers, but must not become a dumping ground.`
 
 ---
 
-# STEP 2 — WHAT BELONGS IN common/
+# STEP 2 — WHAT BELONGS IN shared/
 
 Allowed sub-packages:
 
 ```text
-common/
- ├── constant/
- ├── util/
- ├── enums/
- ├── exception/
- ├── response/
- ├── config/ (light shared config)
- ├── validation/
- └── helper/
+shared/
+ ├── constants/      ← application-wide constants (header names, error codes, regex, cache key prefixes)
+ ├── utils/          ← stateless helper utilities (JsonUtil, DateTimeUtil, MaskingUtil)
+ ├── exceptions/     ← shared base exceptions (BaseException, UnauthorizedException)
+ ├── dtos/           ← shared response wrappers (BaseResponse<T>, PageResponse<T>, ErrorResponse)
+ ├── filter/         ← shared servlet filters (tracing filter, request logging filter)
+ └── validation/     ← reusable validation annotations (@ValidCurrency, @ValidAccountNo)
 ```
 
 ---
 
-# STEP 3 — constant/
+# STEP 3 — constants/
 
 Use for application-wide constants.
 
 Examples:
 
-* Header names
+* Header names (`CasaHttpHeaders.IDEMPOTENCY_KEY`)
 * Error codes
 * Regex patterns
 * Date formats
 * Role names
-* Cache keys prefix
+* Cache key prefixes
 
 Example:
 
 ```java
-public final class HeaderConstant {
+public final class CasaHttpHeaders {
+    public static final String IDEMPOTENCY_KEY = "Idempotency-Key";
     public static final String TRACE_ID = "X-Trace-Id";
+
+    private CasaHttpHeaders() {}
 }
 ```
 
@@ -99,30 +100,72 @@ Rule:
 
 ---
 
-# STEP 5 — exception/
+# STEP 5 — exceptions/
 
 Shared base exceptions.
 
 Examples:
 
-* BaseException
-* ValidationException
-* UnauthorizedException
-* InternalException
+* `BaseException`
+* `ValidationException`
+* `UnauthorizedException`
+* `InternalException`
 
-Feature-specific business exceptions should stay in domain package.
+Feature-specific business exceptions (e.g., `InsufficientBalanceException`, `AccountNotFoundException`) stay in `domain/` — not here.
 
 ---
 
-# STEP 6 — response/
+# STEP 6 — dtos/
 
-Shared API response models.
+Shared response wrapper DTOs used across all controllers.
 
 Examples:
 
-* ApiResponse<T>
-* ErrorResponse
-* PagingResponse<T>
+```java
+// shared/dtos/BaseResponse.java
+public class BaseResponse<T> {
+    private String code;
+    private String message;
+    private T data;
+
+    public static <T> BaseResponse<T> ok(T data) {
+        return new BaseResponse<>("00", "SUCCESS", data);
+    }
+}
+```
+
+Examples:
+* `BaseResponse<T>` — standard API envelope
+* `ErrorResponse` — error details
+* `PageResponse<T>` — paginated result wrapper
+
+---
+
+# STEP 6b — filter/
+
+Shared servlet filters applied across the application.
+
+Examples:
+
+* Request tracing filter (inject/propagate `X-Trace-Id`)
+* Request/response logging filter
+* MDC context filter
+
+```java
+@Component
+@Order(1)
+public class TraceIdFilter extends OncePerRequestFilter {
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain chain) throws ServletException, IOException {
+        String traceId = Optional.ofNullable(request.getHeader(CasaHttpHeaders.TRACE_ID))
+                .orElse(UUID.randomUUID().toString());
+        MDC.put("traceId", traceId);
+        chain.doFilter(request, response);
+    }
+}
+```
 
 ---
 
@@ -159,29 +202,36 @@ common/EverythingService.java
 
 # STEP 9 — DEPENDENCY RULES
 
-All layers may use common package only when generic.
+All layers may use `shared` package, but only for generic cross-cutting concerns.
 
 ```text
-controller -> common
-application -> common
-domain -> common (carefully)
-infrastructure -> common
+controllers/    → shared (constants, dtos, exceptions, filter)
+application/    → shared (constants, exceptions)
+domain/         → shared (carefully — only pure primitives, no framework config)
+infrastructure/ → shared (constants, utils)
 ```
 
-Prefer domain to depend only on pure/common primitives, not framework config.
+Domain must not depend on `shared/dtos/` (response wrappers) or `shared/filter/` — those are HTTP concerns.
 
 ---
 
 # STEP 10 — CLEAN EXAMPLE STRUCTURE
 
 ```text
-common/
- ├── constant/ErrorCode.java
- ├── util/JsonUtil.java
- ├── util/MaskingUtil.java
- ├── response/ApiResponse.java
- ├── exception/BaseException.java
- └── validation/ValidCurrency.java
+shared/
+ ├── constants/
+ │   └── CasaHttpHeaders.java
+ ├── utils/
+ │   ├── JsonUtil.java
+ │   └── MaskingUtil.java
+ ├── exceptions/
+ │   └── BaseException.java
+ ├── dtos/
+ │   └── BaseResponse.java
+ ├── filter/
+ │   └── TraceIdFilter.java
+ └── validation/
+     └── ValidCurrency.java
 ```
 
 ---
@@ -214,25 +264,31 @@ Avoid:
 
 # STEP 13 — GENERATOR RULES FOR AI
 
-When generating common package:
+When generating shared package:
 
-1. Only generic reusable components
-2. Separate constant/util/exception clearly
-3. Keep utilities stateless
-4. No feature-specific logic
-5. Use clear naming
-6. Keep package lightweight
+1. Use `shared/` as the package name (not `common/`)
+2. Sub-packages: `constants/`, `utils/`, `exceptions/`, `dtos/`, `filter/`, `validation/`
+3. Only generic, reusable, cross-cutting components — no feature logic
+4. `dtos/` for shared response wrappers (`BaseResponse<T>`) — controllers use this
+5. `filter/` for shared servlet filters (tracing, logging)
+6. Keep utilities stateless — pure functions only
+7. Domain may use `shared/` carefully — never `dtos/` or `filter/`
+8. Keep package lightweight — no God utility classes
 
 ---
 
 # FINAL CHECKLIST
 
-* [ ] Constants centralized
-* [ ] Utilities reusable
-* [ ] No business logic in common
-* [ ] Response wrappers standardized
-* [ ] Exceptions organized
-* [ ] No dumping-ground smell
+* [ ] Package named `shared/` with correct sub-packages
+* [ ] `constants/` — HTTP headers, error codes, cache keys
+* [ ] `dtos/` — `BaseResponse<T>` and other shared response wrappers
+* [ ] `filter/` — tracing, logging, MDC filters
+* [ ] `exceptions/` — base exceptions only, feature exceptions stay in domain
+* [ ] `utils/` — stateless, pure, no side effects
+* [ ] No business logic anywhere in shared
+* [ ] Domain does not depend on `dtos/` or `filter/`
+* [ ] No feature-specific class in shared
+
 
 ## Mandatory For AI Code Generation
 

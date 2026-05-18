@@ -16,25 +16,56 @@ Goals:
 * Improve readability
 * Reduce manual bugs
 
+## Core Rule
+
+```
+Cross-layer mapping → MUST use MapStruct.
+Within same layer  → MapStruct or Builder, depending on the case.
+```
+
+### Why no `new A(a, b, c, d)`
+
+Constructor mapping breaks every time a field is added or removed:
+
+```java
+// BAD — breaks silently when fields change
+return new OpenPaymentAccountCommand(
+        request.getUserId(),
+        request.getAccountType(),
+        request.getCurrency(),
+        idempotencyKey
+);
+
+// GOOD — MapStruct handles field evolution safely
+@Mapper(componentModel = "spring")
+public interface PaymentAccountControllerMapper {
+    @Mapping(target = "idempotencyKey", source = "idempotencyKey")
+    OpenPaymentAccountCommand toCommand(OpenPaymentAccountRequest request, String idempotencyKey);
+}
+```
+
+When a new field is added to the command, MapStruct generates a compile-time warning. With `new A(...)`, the compiler stays silent and the field is silently dropped.
+
 Rule:
 `Every layer communicates through explicit models, not shared objects.`
 
 ---
 
-# STEP 2 — WHERE MAPPERS ARE USED
+# STEP 2 — WHERE MAPPERS ARE USED AND WHICH TOOL TO USE
 
-Typical mappings:
+| Boundary | Mapping | Tool | Package |
+|----------|---------|------|---------|
+| Cross-layer: Controller → Application | Request → Command | **MapStruct** (mandatory) | `controllers/mapper/` |
+| Cross-layer: Application → Controller | Domain/Result → Response | **MapStruct** (mandatory) | `controllers/mapper/` |
+| Cross-layer: Infrastructure → Application | Entity → Domain | **MapStruct** (mandatory) | `adapters/persistence/mappers/` |
+| Cross-layer: Application → Infrastructure | Domain → Entity | **MapStruct** (mandatory) | `adapters/persistence/mappers/` |
+| Cross-layer: Infrastructure client | Command/Domain → External DTO | **MapStruct** (mandatory) | `client/<service>/mapper/` |
+| Cross-layer: Infrastructure client | External DTO → Domain/Result | **MapStruct** (mandatory) | `client/<service>/mapper/` |
+| Within same layer | Object construction inside one layer | MapStruct **or Builder** | same package |
 
-```text
-Controller Layer:
-Request DTO <-> Command / Query
-Result <-> Response DTO
+**Cross-layer = always MapStruct. No exceptions. No `new A(a,b,c,d)`.**
 
-Infrastructure Layer:
-Entity <-> Domain Model
-External DTO <-> Domain Model
-Kafka Event <-> Domain Event
-```
+Within the same layer (e.g., building a command object inside a use case from multiple inputs), use Builder when the object has many optional fields, or MapStruct when converting between two explicit models.
 
 ---
 
@@ -203,13 +234,22 @@ public interface WalletEntityMapper {
 # STEP 12 — PACKAGE STRUCTURE
 
 ```text
-controller/mapper
-application (usually no mapper unless needed)
-infrastructure/persistence/mapper
-infrastructure/client/mapper
+controllers/
+└── mapper/                              ← HTTP Request→Command, Domain→Response
+
+application/
+└── mappers/                             ← application-level mappers (if needed)
+
+infrastructure/
+├── adapters/
+│   └── persistence/
+│       └── mappers/                     ← Entity ↔ Domain
+└── client/
+    └── <service-name>/
+        └── mapper/                      ← Command/Domain ↔ External request/response DTOs
 ```
 
-Recommended separate by boundary.
+One mapper per boundary. Never share a mapper across layers.
 
 ---
 
@@ -256,32 +296,47 @@ Avoid:
 * Reflection mappers with poor performance by default
 * Hidden field loss
 
-## CRITICAL: No Manual Mapper Methods
+## CRITICAL: No constructor mapping across layers
 
-Never implement manual `build()` / `toResult()` / `toDto()` methods inline.
+Never use `new A(a, b, c, d)` for cross-layer conversions.
 
-Bad:
+Bad — breaks silently when fields are added/removed:
 
 ```java
-// In UseCase or Service
-private PaymentResponse buildResponse(Payment payment) {
-    return PaymentResponse.builder()
-        .id(payment.getId())
-        .amount(payment.getAmount())
-        .build();
-}
+// In UseCase or Controller
+return new PaymentResponse(
+        payment.getId(),
+        payment.getAmount(),
+        payment.getStatus()
+);
 ```
 
-Good:
+Good — compile-time safe, field evolution handled:
 
 ```java
 @Mapper(componentModel = "spring")
-public interface PaymentMapper {
+public interface PaymentControllerMapper {
     PaymentResponse toResponse(Payment payment);
 }
 ```
 
-Rule: All object conversion between layers MUST use a dedicated `*Mapper` interface with MapStruct.
+## Within same layer — MapStruct or Builder
+
+Builder is acceptable when constructing objects within the same layer with many optional fields:
+
+```java
+// OK — within application layer, building a complex command from multiple inputs
+StatementJobCommand command = StatementJobCommand.builder()
+        .accountNo(accountNo)
+        .fromDate(fromDate)
+        .toDate(toDate)
+        .requestedBy(userId)
+        .build();
+```
+
+MapStruct is preferred when there are two explicit models to convert between, even within the same layer.
+
+Rule: **Cross-layer = MapStruct always. Within-layer = MapStruct or Builder, choose based on the case.**
 
 ---
 
@@ -289,23 +344,27 @@ Rule: All object conversion between layers MUST use a dedicated `*Mapper` interf
 
 When generating source code:
 
-1. Create mapper for every boundary
-2. Use MapStruct with componentModel=spring
-3. Add explicit @Mapping when names differ
-4. Keep mapper side-effect free
-5. Generate update mapper when needed
-6. Preserve financial precision fields
-7. Generate tests for complex mapper logic
+1. Cross-layer mapping → always MapStruct, never `new A(a,b,c,d)` constructor
+2. Within same layer → MapStruct or Builder depending on case
+3. Place mappers in the correct package per boundary (see STEP 12)
+4. Use `@Mapper(componentModel = "spring")`
+5. Add explicit `@Mapping` when field names differ
+6. Keep mapper side-effect free — no business logic, no API calls
+7. Use `@MappingTarget` for partial update (JPA patch flow)
+8. Preserve financial precision fields: `amount`, `feeAmount`, `currency` — never lose or truncate
+9. Generate tests for mappers with custom expressions or critical financial fields
 
 ---
 
 # FINAL CHECKLIST
 
-* [ ] DTO != Domain != Entity
-* [ ] Mapper per boundary exists
+* [ ] Cross-layer mapping uses MapStruct — no `new A(a,b,c,d)` constructor
+* [ ] Within-layer: MapStruct or Builder chosen based on case
+* [ ] Mapper placed in correct package (see STEP 12)
+* [ ] DTO ≠ Domain ≠ Entity — each layer has its own model
 * [ ] No business logic in mapper
-* [ ] Explicit renamed fields mapped
-* [ ] Money fields verified
-* [ ] Null strategy defined
-* [ ] Nested mapping clean
-* [ ] Compile-time generated
+* [ ] Explicit `@Mapping` for renamed fields
+* [ ] Financial fields (`amount`, `currency`, `feeAmount`) verified — never silently dropped
+* [ ] Null strategy defined for patch update flows
+* [ ] Nested mapping uses `uses = {...}` for modular mappers
+* [ ] Compile-time generated via MapStruct
