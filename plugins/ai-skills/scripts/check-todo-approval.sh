@@ -7,7 +7,7 @@ if [ ! -f "$APPROVAL_FILE" ]; then
     exit 0
 fi
 
-FILE_MTIME=$(stat -f%m "$APPROVAL_FILE" 2>/dev/null)
+FILE_MTIME=$(stat -c%Y "$APPROVAL_FILE" 2>/dev/null || stat -f%m "$APPROVAL_FILE" 2>/dev/null)
 if [ -z "$FILE_MTIME" ]; then
     echo '{"decision": "block", "reason": "Không đọc được approval file."}'
     exit 0
